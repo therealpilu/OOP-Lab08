@@ -1,9 +1,19 @@
 package it.unibo.oop.lab.mvc;
 
+import java.awt.BorderLayout;
+
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 /**
  * A very simple program using a graphical interface.
@@ -11,12 +21,13 @@ import javax.swing.JFrame;
  */
 public final class SimpleGUI {
 
-    private final JFrame frame = new JFrame();
+    private final JFrame frame = new JFrame("My third java graphical user interface");
+    private final Controller controller;
 
     /*
      * Once the Controller is done, implement this class in such a way that:
      * 
-     * 1) I has a main method that starts the graphical application
+     * 1) It has a main method that starts the graphical application
      * 
      * 2) In its constructor, sets up the whole view
      * 
@@ -36,8 +47,56 @@ public final class SimpleGUI {
 
     /**
      * builds a new {@link SimpleGUI}.
+     * 
+     * @param ctrl
+     *          the controller
      */
-    public SimpleGUI() {
+    public SimpleGUI(final Controller ctrl) {
+        this.controller = ctrl;
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        final JPanel panel1 = new JPanel(new BorderLayout());
+        final JTextField tf = new JTextField();
+        final JTextArea ta = new JTextArea();
+        ta.setEditable(false);
+        final JButton print = new JButton("Print");
+        final JButton history = new JButton("Show history");
+
+        panel1.add(tf, BorderLayout.NORTH);
+        panel1.add(ta, BorderLayout.CENTER);
+        final JPanel southpanel = new JPanel();
+        southpanel.setLayout(new BoxLayout(southpanel, BoxLayout.LINE_AXIS));
+        southpanel.add(print);
+        southpanel.add(history);
+        panel1.add(southpanel, BorderLayout.SOUTH);
+
+        /*
+         * Handlers
+         */
+
+        print.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                SimpleGUI.this.controller.setNextString(tf.getText());
+                SimpleGUI.this.controller.printCurrentString();
+            }
+        });
+
+        history.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                final StringBuilder text = new StringBuilder();
+                final List<String> printHist = SimpleGUI.this.controller.getHistory();
+                for (final String s : printHist) {
+                    text.append(s + "\n");
+                }
+                if (!printHist.isEmpty()) {
+                    text.deleteCharAt(text.length() - 1);
+                }
+                ta.setText(text.toString());
+            }
+        });
 
         /*
          * Make the frame half the resolution of the screen. This very method is
@@ -59,7 +118,20 @@ public final class SimpleGUI {
          * flag makes the OS window manager take care of the default positioning
          * on screen. Results may vary, but it is generally the best choice.
          */
+        frame.setContentPane(panel1);
         frame.setLocationByPlatform(true);
+    }
+    /*
+     * 
+     */
+    private void display() {
+        frame.setVisible(true);
+    }
+    /**
+     * @param args ignored
+     */
+    public static void main(final String... args) {
+        new SimpleGUI(new ControllerImpl()).display();
     }
 
 }
